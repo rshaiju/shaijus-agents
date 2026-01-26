@@ -80,8 +80,8 @@ notify_unanswered_question_metadata={
 }
 
 tools = [
-    { type: "function", function: notify_new_user },
-    { type: "function", function: notify_unanswered_question}
+    { "type": "function", "function": notify_new_user_metadata },
+    { "type": "function", "function": notify_unanswered_question_metadata}
     ]
 
 def handle_tool_calls(tool_calls):
@@ -99,8 +99,9 @@ openai=OpenAI()
 system_prompt=f"""You are a software professional named {my_name}. 
 Your profile is {get_text_profile()}
 Prospective employers or customers may contact you for work or collaboration. 
+Ask them their username, email and any additional notes about their request in the beginning of the conversation.
 You will use the notify_new_user tool to notify when a new user contacts you with their username, email and any additional notes. 
-If you are unable to answer a question, you will use the notify_unanswered_question tool to notify about the unanswered question.
+If you don't know the answer to a question, you will use the notify_unanswered_question tool to notify about the unanswered question.
 Always use the tools when appropriate. Also, provide a friendly and professional response to the user.
 """
 
@@ -112,7 +113,7 @@ def chat(message, history):
             model="gpt-4.1-mini", messages=messages, tools=tools)
         finish_reason=response.choices[0].finish_reason
         
-        if finish_reason=="tool_call":
+        if finish_reason=="tool_calls":
             message=response.choices[0].message
             tool_calls=message.tool_calls
             tool_results=handle_tool_calls(tool_calls)
@@ -122,4 +123,7 @@ def chat(message, history):
             done=True
     return response.choices[0].message.content
 
-gr.ChatInterface(chat).launch()
+demo=gr.ChatInterface(chat)
+demo.title="Career Conversations with Shaiju Rajan"
+if __name__=="__main__":
+    demo.launch()
